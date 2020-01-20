@@ -1,0 +1,117 @@
+{const {
+    Client,
+    Attachment
+} = require('discord.js');
+
+const Discord = require('discord.js');
+const bot = new Client();
+
+const cheerio = require('cheerio');
+
+const request = require('request');
+
+const ytdl = require("ytdl-core");
+const fs = require("fs");
+
+const fetchVideoInfo = require("youtube-info");
+
+var config = JSON.parse(fs.readFileSync('./settings.json', 'uf-8'));
+
+const token = 'NjI5NTE3MzE1Mzg1NTg5Nzgx.XZa5vg.ZFBE3zGrHok3mWQkw0Pj-xFw5E8';
+
+const yt_api_key = 'AIzaSyDLWmSHXRBuCwcqNCrvmx_SeIdzQNvILP4'
+
+const PREFIX = '!';
+
+var Version = '1.0.1';
+
+var servers = {};
+
+bot.on('ready', () =>{
+    console.log('This bot is online!');
+})
+
+bot.on('guildMemberAdd', member =>{
+
+    const channel = member.guild.channels.find(channel => channel.name === "welcome");
+    if(!channel) return;
+
+    channel.send(`Welcome to our server, ${member}, please read the rules in the rules channel!`)
+});
+bot.on('message', message=>{
+    
+    let args = message.content.substring(PREFIX.length).split(" ");
+
+    switch(args[0]){
+        case 'help':
+            
+        case 'image':
+            image(message);
+            break;
+        case 'ping':
+            message.channel.sendMessage('pong!');
+            break;
+        case 'clear':
+            if(!message.member.roles.find(r => r.name === "Founder")) return message.channel.send('YOU DO NOT HAVE PERMISSIONS')
+            .then(msg => msg.delete(5000));
+            if(!args[1]) return message.reply('Error please define second arg')
+            message.channel.bulkDelete(args[1]);
+            break;
+        case 'play':
+            if(!args)
+
+            break;
+
+        case 'info':
+            const embed = new Discord.RichEmbed()
+            .setTitle('Test_Bot Info')
+            .addField('Version', Version, true)
+            .addField('Creator Name', 'Serena', true)
+            .addField('Current Server', message.guild.name)
+            .setColor(0x0CFF00)
+            .setThumbnail('https://i.imgur.com/L6p3TIQ.jpg')
+            message.channel.sendEmbed(embed);
+            break;
+
+
+    }
+});
+
+function image(message){
+    var options = {
+        url: "http://results.dogpile.com/serp?qc=images&q=" + "music",
+        method: "GET",
+        headers: {
+            "Accept": "text/html",
+            "User-Agent": "Chrome"
+        }
+};
+
+request(options, function(error, response, responseBody) {
+    if (error) {
+        return;
+    }
+
+
+    $ = cheerio.load(responseBody);
+
+
+    var links = $(".image a.link");
+
+    var urls = new Array(links.length).fill(0).map((v, i) => links.eq(i).attr("href"));
+   
+    console.log(urls);
+
+    if (!urls.length) {
+       
+        return;
+    }
+
+    // Send result
+    message.channel.send( urls[Math.floor(Math.random() * urls.length)]);
+});
+
+    }
+
+bot.login(token);
+}
